@@ -1,0 +1,35 @@
+name: ""
+author: ""
+description: ""
+branding:
+  icon: trash-2
+  color: red
+
+inputs:
+  minimumDeletionSize:
+    description: >
+      Specify a minimum size of artifacts to delete in bytes. Artifacts smaller
+      than this won't be deleted.
+    required: false
+    default: "0"
+  name:
+    description: >
+      (Optional) Specify an artifact name to delete. All other artifacts will
+      be left alone - even if match other criteria,
+    required: false
+  minimumAge:
+    description: Only delete artifacts older than this, measured in seconds.
+    required: false
+    default: "0"
+  repository:
+    description: ""
+    required: false
+    default: ${{ github.repository }}
+  token:
+    description: ""
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: docker
+  image: Dockerfile
