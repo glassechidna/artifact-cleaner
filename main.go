@@ -64,28 +64,36 @@ func main() {
 }
 
 func forEachArtifact(ctx context.Context, client *wrapper, owner, repo string, iter func(ctx context.Context, artifact *Artifact, run *WorkflowRun) (bool, error)) error {
-	runs, _, err := client.ListWorkflowRuns(ctx, owner, repo, nil)
-	if err != nil {
-		return err
-	}
+	opt := &github.ListOptions{}
 
-	for _, run := range runs {
-		artifacts, _, err := client.ListWorkflowArtifacts(ctx, run.ArtifactsURL, nil)
+	for {
+		runs, resp, err := client.ListWorkflowRuns(ctx, owner, repo, opt)
 		if err != nil {
 			return err
 		}
 
-		for _, artifact := range artifacts {
-			stop, err := iter(ctx, artifact, run)
+		for _, run := range runs {
+			artifacts, _, err := client.ListWorkflowArtifacts(ctx, run.ArtifactsURL, nil)
 			if err != nil {
 				return err
 			}
 
-			if stop {
-				return nil
+			for _, artifact := range artifacts {
+				stop, err := iter(ctx, artifact, run)
+				if err != nil {
+					return err
+				}
+
+				if stop {
+					return nil
+				}
 			}
 		}
-	}
 
-	return nil
+		if resp.NextPage == 0 {
+			return nil
+		}
+
+		opt.Page = resp.NextPage
+	}
 }
